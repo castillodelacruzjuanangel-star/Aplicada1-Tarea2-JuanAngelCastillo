@@ -1,0 +1,119 @@
+@page "/"
+@page "/Estudiante/Index"
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@inject RegistroEstudiantes.Services.EstudianteServices estudianteServices
+
+<div class="container">
+    <div >
+        <div class="card-header d-flex justify-content-between align-center mb-4">
+            <h5 class="card-title">REGISTRO DE ESTUDIANTES</h5>
+            <a href="/Estudiante/Create" class="btn btn-primary"><span class="bi bi-plus-square mt-3"></span> Agregar</a>
+        </div>
+
+        <div class="card body mb-2">
+
+            <div class="row">
+                <div class="col-3">
+                    <label class="col-form-label">Filtrar por</label>
+                </div>
+
+                <div class="col-4">
+                    <label class="col-form-label">Buscar</label>
+                </div>
+            </div>
+
+            <div class="row align-items-center">
+
+                <div class="col-3">
+                    <InputSelect class="form-select" @bind-Value="Filtro">
+                        <option value="" selected disabled>Elegir una opcion</option>
+                        <option value="Nombre">Nombre</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-4">
+
+                    <div class="input-group">
+                        <input class="form-control" @bind-value="ValorFiltro" placeholder="Buscar"/>
+                        <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <table class="table table-hover">
+                <thead class="table table-striped">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Direccion</th>
+                        <th>Email</th>
+                        <th>Fecha de nacimiento</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var estudiante in listaEstudiantes)
+                    {
+                        <tr>
+                            <td>@estudiante.EstudianteId</td>
+                            <td>@estudiante.Nombre</td>
+                            <td>@estudiante.Direccion</td>
+                            <td>@estudiante.Email</td>
+                            <td>@estudiante.FechaNacimiento</td>
+
+                            <td class="text-center">
+                                <a href="/Estudiante/Edit/@estudiante.EstudianteId" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                            </td>
+                        </tr>
+
+                    }
+                </tbody>
+            </table>
+
+            <div class="card-fooster d-flex justify-content-between align-center mb-1">
+                <label>cantidad: @listaEstudiantes.Count()</label>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code{
+
+    public List<Estudiante> listaEstudiantes = [];
+
+    public string Filtro{get; set;} = string.Empty;
+    public string ValorFiltro{get; set;} = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaEstudiantes = await estudianteServices.Listar(e => e.EstudianteId > 0);
+    }
+
+    public async Task Buscar()
+    {
+        if(ValorFiltro.Trim() != "")
+        {
+            if(Filtro == "Nombre")
+            {
+                listaEstudiantes = await estudianteServices.Listar(e => e.Nombre.ToLower().Contains(ValorFiltro.ToLower()));
+            }
+        }
+        else
+        {
+            listaEstudiantes = await estudianteServices.Listar(e => e.EstudianteId > 0);
+        }
+    }
+
+    public async Task Restablecer()
+    {
+        listaEstudiantes = await estudianteServices.Listar(e => e.EstudianteId > 0);
+        ValorFiltro = string.Empty;
+        Filtro = string.Empty;
+    }
+}

@@ -1,0 +1,100 @@
+@page "/Estudiante/Edit/{EstudianteId:int}"
+@rendermode InteractiveServer
+@inject RegistroEstudiantes.Services.EstudianteServices estudianteServices
+@inject NavigationManager navigation
+
+
+<EditForm Model="estudiante" OnValidSubmit="Modificar" FormName="editarEstudiante" method="post">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <div class="container">
+        <div>
+            <div class="card-header text-center">
+                <h5 class="card-title">EDITAR DATOS DEL ESTUDIANTE</h5>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-4">
+                    <label class="form-label">Id</label>
+                    <InputNumber class="form-control" @bind-Value="estudiante.EstudianteId" readonly></InputNumber>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <InputText class="form-control" @bind-Value="estudiante.Nombre"></InputText>
+                    <ValidationMessage For="@(()=> estudiante.Nombre)"/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Fecha de nacimiento</label>
+                    <InputDate class="form-control" @bind-Value="estudiante.FechaNacimiento"></InputDate>
+                    <ValidationMessage For="@(()=> estudiante.FechaNacimiento)"/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Direccion</label>
+                    <InputText class="form-control" @bind-Value="estudiante.Direccion"></InputText>
+                    <ValidationMessage For="@(()=> estudiante.Direccion)"/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <InputText class="form-control" @bind-Value="estudiante.Email"></InputText>
+                    <ValidationMessage For="@(()=> estudiante.Email)"/>
+                </div>
+            </div>
+
+            <div class="card-footer text-center mt-2">
+                <a href="/Estudiante/Index" class="btn btn-secondary"><span class="bi bi-arrow-left"></span>Volver</a>
+                <button type="submit" class="btn btn-success bi bi-floppy">Guardar</button>
+                <button type="button" class="btn btn-danger bi bi-trash" @onclick="Eliminar">Eliminar</button>
+            </div>
+
+        </div>
+    </div>
+
+</EditForm>
+
+@code{
+    [Parameter]
+    public int EstudianteId{get; set;}
+    public Estudiante estudiante{get; set;} = new Estudiante();
+    public List<Estudiante> listaEstudiantes = [];
+    public string Mensaje{get; set;} = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        estudiante = await estudianteServices.Buscar(EstudianteId);
+        listaEstudiantes = await estudianteServices.Listar(l => l.EstudianteId > 0);
+    }
+
+    public async Task Modificar()
+    {
+        var modificado = await estudianteServices.Modificar(estudiante);
+
+        if (modificado)
+        {
+            navigation.NavigateTo("/Estudiante/Index");
+        }
+        else
+        {
+            Mensaje = "Error al guardar los cambios";
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        var eliminado =  await estudianteServices.Eliminar(estudiante.EstudianteId);
+
+        if (eliminado)
+        {
+            navigation.NavigateTo("/Estudiante/Index");
+        }
+        else
+        {
+            Mensaje = "Error al eliminar el estudiante";
+        }
+    }
+}
